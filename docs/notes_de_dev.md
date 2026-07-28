@@ -128,6 +128,9 @@ Participation à la [Garbage Jam #6](https://itch.io/jam/garbage-jam-6/rate/4825
 Améliorations hors proto:
 
 [] Ajouter une trainée derrière le vaisseau
-[] Sélection de vaisseau sur le menu
+
+[X] Sélection de vaisseau sur le menu
+
 [] Sélection de portrait sur le menu
+
 [] Ajouter un fond qui scroll à l'infini de haut en bas
