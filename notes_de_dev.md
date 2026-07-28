@@ -43,20 +43,32 @@ Caractéristiques de chaque élément:
 	
 TO DO:
 [X] Rectangle
+
 	[X] Système de collision
 	
 [] Joueur
+
 	[X] Déplacements
+
 	[X] State Machine
+
 	[X] Marquer un point
+
 	[X] Mourir
+
 	[X] Resets de position
 
+
 [] Etoiles
+
 	[X] Déplacements
+
 	[X] Création d'un lots d'étoiles
+
 	[X] Position de départ aléatoire
+
 	[X] Vitesse aléatoire
+
 	[X] Collision avec Joueur
 
 
@@ -75,14 +87,16 @@ Du coup dans les états qui déclenchent un reset de position (CROSS_FINISH_LINE
 ## Reste à faire à ce jour:
 
 [X] Mettre un timer en place (et l'afficher).
-[] Ajouter des sons
-[] Ajouter des graphismes
-	[X] Utiliser la method `void ImageResizeNN` pour scale ma texture
-	[X] Ajouter des vaisseaux
-	[] Ajouter une trainée derrière le vaisseau
-[] Ajouter du juice
-[] Faire tester
 
+[X] Ajouter des sons
+
+[X] Ajouter des graphismes
+
+	[X] Utiliser la method `void ImageResizeNN` pour scale ma texture
+
+	[X] Ajouter des vaisseaux
+
+[X] Faire tester
 
 ---
 
@@ -101,3 +115,19 @@ Licences:
 - https://mattflat.itch.io/ (SFX)
 - https://gooseninja.itch.io (Music)
 - https://gvituri.itch.io (Graphics)
+
+
+---
+
+Proto terminé et en ligne !
+Participation à la [Garbage Jam #6](https://itch.io/jam/garbage-jam-6/rate/4825847)
+
+
+---
+
+Améliorations hors proto:
+
+[] Ajouter une trainée derrière le vaisseau
+[] Sélection de vaisseau sur le menu
+[] Sélection de portrait sur le menu
+[] Ajouter un fond qui scroll à l'infini de haut en bas
