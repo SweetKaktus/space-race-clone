@@ -46,6 +46,10 @@ pub fn main(init: std.process.Init) !void {
         sprite.resizeNN(@as(i32, @intFromFloat(spriteSize)), @as(i32, @intFromFloat(spriteSize)));
     }
 
+    // load reactor spritesheet into image
+    var reactorImageAtlas = try rl.loadImage("assets/graphics/reactor_fire_spritesheet.png");
+    reactorImageAtlas.resizeNN(spriteSize * 12, spriteSize);
+
     // Config Player
     const playerStartY = @as(f32, @floatFromInt(screenHeight)) - 90.0;
     const playerBottomBoundPosition = @as(f32, @floatFromInt(screenHeight)) - spriteSize / 2;
@@ -134,19 +138,41 @@ pub fn main(init: std.process.Init) !void {
         }
     }
 
+    for (&shipSpritesImg) |*sprite| {
+        if (debug) print("SPRITE IMAGE UNLOADED\n", .{});
+        sprite.unload();
+    }
+
+    const reactorTextureAtlas = try rl.loadTextureFromImage(reactorImageAtlas);
+    defer reactorTextureAtlas.unload();
+    reactorImageAtlas.unload();
+
     var player1SelectedShip: usize = 0;
     var player2SelectedShip: usize = 1;
 
     const player1Texture = shipSpritesTextures[player1SelectedShip];
     const player2Texture = shipSpritesTextures[player2SelectedShip];
 
-    for (&shipSpritesImg) |*sprite| {
-        if (debug) print("SPRITE IMAGE UNLOADED\n", .{});
-        sprite.unload();
-    }
-
-    var player1 = Player.init(PlayerNumber.firstPlayer, player1StartX, playerStartY, playerBottomBoundPosition, spriteSize, spriteSize, player1Texture);
-    var player2 = Player.init(PlayerNumber.secondPlayer, player2StartX, playerStartY, playerBottomBoundPosition, spriteSize, spriteSize, player2Texture);
+    var player1 = Player.init(
+        PlayerNumber.firstPlayer,
+        player1StartX,
+        playerStartY,
+        playerBottomBoundPosition,
+        spriteSize,
+        spriteSize,
+        player1Texture,
+        reactorTextureAtlas,
+    );
+    var player2 = Player.init(
+        PlayerNumber.secondPlayer,
+        player2StartX,
+        playerStartY,
+        playerBottomBoundPosition,
+        spriteSize,
+        spriteSize,
+        player2Texture,
+        reactorTextureAtlas,
+    );
 
     var config: GameConfig = GameConfig.init(
         screenWidth,
@@ -158,6 +184,7 @@ pub fn main(init: std.process.Init) !void {
         player2StartX,
         player1Texture,
         player2Texture,
+        reactorTextureAtlas,
         boundBottomStarStartY,
         starWidth,
         starHeight,
@@ -401,8 +428,26 @@ pub fn resetGame(
     rl.setRandomSeed(@as(u32, @intCast(timestamp.*)));
 
     // Reset Players
-    player1.* = Player.init(PlayerNumber.firstPlayer, config.player1StartX, config.playerStartY, config.playerBottomBoundPosition, config.spriteSize, config.spriteSize, config.player1Texture);
-    player2.* = Player.init(PlayerNumber.secondPlayer, config.player2StartX, config.playerStartY, config.playerBottomBoundPosition, config.spriteSize, config.spriteSize, config.player2Texture);
+    player1.* = Player.init(
+        PlayerNumber.firstPlayer,
+        config.player1StartX,
+        config.playerStartY,
+        config.playerBottomBoundPosition,
+        config.spriteSize,
+        config.spriteSize,
+        config.player1Texture,
+        config.reactorTextureAtlas,
+    );
+    player2.* = Player.init(
+        PlayerNumber.secondPlayer,
+        config.player2StartX,
+        config.playerStartY,
+        config.playerBottomBoundPosition,
+        config.spriteSize,
+        config.spriteSize,
+        config.player2Texture,
+        config.reactorTextureAtlas,
+    );
 
     // Reset Stars
     for (stars, 0..) |*star, i| {
