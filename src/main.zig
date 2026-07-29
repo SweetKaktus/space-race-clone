@@ -12,6 +12,7 @@ const PlayerState = @import("playerState.zig").PlayerState;
 const GameConfig = @import("gameConfig.zig").GameConfig;
 const Star = @import("star.zig").Star;
 const StarDirection = @import("starDirection.zig").StarDirection;
+const BackgroundStar = @import("backgroundStar.zig").BackgroundStar;
 
 const GameState = enum {
     MENU,
@@ -61,6 +62,19 @@ pub fn main(init: std.process.Init) !void {
     const boundBottomStarStartY = @as(i32, @intFromFloat(playerStartY - 20.0));
     const starWidth = 8.0;
     const starHeight = 8.0;
+
+    // Config Background Stars
+    const bgStarCount = 8;
+    var bgStars: [bgStarCount]BackgroundStar = undefined;
+    for (&bgStars, 0..) |*star, i| {
+        var starStartX: f32 = @as(f32, @floatFromInt(rl.getRandomValue(0, screenWidth / 2)));
+        if (i >= bgStars.len / 2) {
+            starStartX = @as(f32, @floatFromInt(rl.getRandomValue(screenWidth / 2, screenWidth)));
+        }
+
+        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, screenHeight)));
+        star.* = BackgroundStar.init(starStartX, starStartY);
+    }
 
     var stars: [starCount]Star = undefined;
     for (&stars, 0..) |*star, i| {
@@ -283,6 +297,7 @@ pub fn main(init: std.process.Init) !void {
                         &player1,
                         &player2,
                         &stars,
+                        &bgStars,
                         &floatTimer,
                         &intTimer,
                         &timestamp,
@@ -368,6 +383,10 @@ pub fn main(init: std.process.Init) !void {
                     }
                 }
 
+                for (&bgStars) |*star| {
+                    star.update(dt, screenHeight);
+                }
+
                 floatTimer -= 1.0 * dt;
                 intTimer = @as(i32, @intFromFloat(floatTimer));
 
@@ -383,6 +402,10 @@ pub fn main(init: std.process.Init) !void {
                 player2.draw();
 
                 for (&stars) |*star| {
+                    star.draw();
+                }
+
+                for (&bgStars) |*star| {
                     star.draw();
                 }
 
@@ -417,6 +440,7 @@ pub fn resetGame(
     player1: *Player,
     player2: *Player,
     stars: []Star,
+    bgStars: []BackgroundStar,
     floatTimer: *f32,
     intTimer: *i32,
     timestamp: *i64,
@@ -459,6 +483,12 @@ pub fn resetGame(
         }
 
         star.* = Star.init(starStartX, starStartY, config.starWidth, config.starHeight, starDirection);
+    }
+
+    for (bgStars) |*star| {
+        const starStartX = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screenWidth)));
+        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screenHeight)));
+        star.* = BackgroundStar.init(starStartX, starStartY);
     }
 
     // Reset Timer
