@@ -131,12 +131,12 @@ pub const Player = struct {
     }
 
     pub fn draw(self: @This()) void {
+        self.reactorAnim.draw(self.reactor_position);
         rl.drawTexture(
             self.texture,
             @intFromFloat(self.position_x),
             @intFromFloat(self.position_y),
             rl.Color.white,
         );
-        self.reactorAnim.draw(self.reactor_position);
     }
 };
