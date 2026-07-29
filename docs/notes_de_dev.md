@@ -46,7 +46,7 @@ TO DO:
 
 	[X] Système de collision
 	
-[] Joueur
+[X] Joueur
 
 	[X] Déplacements
 
@@ -59,7 +59,7 @@ TO DO:
 	[X] Resets de position
 
 
-[] Etoiles
+[X] Etoiles
 
 	[X] Déplacements
 
@@ -125,12 +125,10 @@ Participation à la [Garbage Jam #6](https://itch.io/jam/garbage-jam-6/rate/4825
 
 ---
 
-Améliorations hors proto:
+Améliorations hors first release:
 
-[] Ajouter une trainée derrière le vaisseau
+[X] Ajouter une trainée derrière le vaisseau
 
 [X] Sélection de vaisseau sur le menu
-
-[] Sélection de portrait sur le menu
 
 [] Ajouter un fond qui scroll à l'infini de haut en bas
