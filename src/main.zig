@@ -6,13 +6,13 @@ const print = @import("std").debug.print;
 const rl = @import("raylib");
 
 // custom imports
-const Player = @import("player.zig").Player;
-const PlayerNumber = @import("playerNumber.zig").PlayerNumber;
-const PlayerState = @import("playerState.zig").PlayerState;
-const GameConfig = @import("gameConfig.zig").GameConfig;
-const Star = @import("star.zig").Star;
-const StarDirection = @import("starDirection.zig").StarDirection;
-const BackgroundStar = @import("backgroundStar.zig").BackgroundStar;
+const Player = @import("entities/player.zig").Player;
+const PlayerNumber = @import("enums/playerNumber.zig").PlayerNumber;
+const PlayerState = @import("enums/playerState.zig").PlayerState;
+const GameConfig = @import("config/gameConfig.zig").GameConfig;
+const Star = @import("entities/star.zig").Star;
+const StarDirection = @import("enums/starDirection.zig").StarDirection;
+const BackgroundStar = @import("entities/backgroundStar.zig").BackgroundStar;
 
 const GameState = enum {
     MENU,
@@ -67,9 +67,9 @@ pub fn main(init: std.process.Init) !void {
     const bgStarCount = 8;
     var bgStars: [bgStarCount]BackgroundStar = undefined;
     for (&bgStars, 0..) |*star, i| {
-        var starStartX: f32 = @as(f32, @floatFromInt(rl.getRandomValue(0, screenWidth / 2)));
+        var starStartX: f32 = @as(f32, @floatFromInt(rl.getRandomValue(10, screenWidth / 2)));
         if (i >= bgStars.len / 2) {
-            starStartX = @as(f32, @floatFromInt(rl.getRandomValue(screenWidth / 2, screenWidth)));
+            starStartX = @as(f32, @floatFromInt(rl.getRandomValue(screenWidth / 2, screenWidth - 10)));
         }
 
         const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, screenHeight)));

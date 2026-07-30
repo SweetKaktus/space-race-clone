@@ -2,9 +2,9 @@ const print = @import("std").debug.print;
 
 const rl = @import("raylib");
 
-const PlayerNumber = @import("playerNumber.zig").PlayerNumber;
-const Rectangle = @import("rectangle.zig").Rectangle;
-const PlayerState = @import("playerState.zig").PlayerState;
+const PlayerNumber = @import("../enums/playerNumber.zig").PlayerNumber;
+const Rectangle = @import("../composants/rectangle.zig").Rectangle;
+const PlayerState = @import("../enums/playerState.zig").PlayerState;
 const Reactor = @import("reactor.zig").Reactor;
 
 var debug: bool = false;
