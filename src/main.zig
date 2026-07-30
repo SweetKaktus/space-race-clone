@@ -13,6 +13,7 @@ const GameConfig = @import("config/gameConfig.zig").GameConfig;
 const Star = @import("entities/star.zig").Star;
 const StarDirection = @import("enums/starDirection.zig").StarDirection;
 const BackgroundStar = @import("entities/backgroundStar.zig").BackgroundStar;
+const AudioManager = @import("systems/audioManager.zig").AudioManager;
 
 const GameState = enum {
     MENU,
@@ -96,47 +97,9 @@ pub fn main(init: std.process.Init) !void {
     // Config Audio
     rl.initAudioDevice();
     defer rl.closeAudioDevice();
-    rl.setMasterVolume(1.0);
 
-    const menuMusic = try rl.loadMusicStream("assets/music/menu.wav");
-    defer menuMusic.unload();
-    rl.setMusicVolume(menuMusic, 0.8);
-    const gameMusic = try rl.loadMusicStream("assets/music/game.wav");
-    defer gameMusic.unload();
-    rl.setMusicVolume(gameMusic, 0.6);
-
-    const player1EngineSound = try rl.loadMusicStream("assets/sfx/engine-looping_1.wav");
-    defer player1EngineSound.unload();
-
-    const player1EnginePan: f32 = -1.0;
-    rl.setMusicPan(player1EngineSound, player1EnginePan);
-
-    // Formule : ((screenHeigh - position_y) * 100) / screenHeight
-    var player1EngineVolume: f32 = (@as(f32, @floatFromInt(screenHeight)) - playerStartY) / (@as(f32, @floatFromInt(screenHeight)) * 0.5);
-    rl.setMusicVolume(player1EngineSound, player1EngineVolume);
-
-    var player1EnginePitch: f32 = (@as(f32, @floatFromInt(screenHeight)) - playerStartY) / (@as(f32, @floatFromInt(screenHeight))) + 0.5;
-    rl.setMusicPitch(player1EngineSound, player1EnginePitch);
-
-    const player2EngineSound = try rl.loadMusicStream("assets/sfx/engine-looping_1.wav");
-    defer player2EngineSound.unload();
-
-    const player2EnginePan: f32 = 1.0;
-    rl.setMusicPan(player2EngineSound, player2EnginePan);
-
-    var player2EngineVolume: f32 = (@as(f32, @floatFromInt(screenHeight)) - playerStartY) / (@as(f32, @floatFromInt(screenHeight)) * 0.5);
-    rl.setMusicVolume(player2EngineSound, player2EngineVolume);
-
-    var player2EnginePitch: f32 = (@as(f32, @floatFromInt(screenHeight)) - playerStartY) / (@as(f32, @floatFromInt(screenHeight))) + 0.5;
-    rl.setMusicPitch(player2EngineSound, player2EnginePitch);
-
-    const starShootSound = try rl.loadSound("assets/sfx/shoot-small_6.wav");
-    defer starShootSound.unload();
-    rl.setSoundVolume(starShootSound, 0.8);
-
-    const crossLineSound = try rl.loadSound("assets/sfx/misc_3.wav");
-    defer crossLineSound.unload();
-    rl.setSoundVolume(crossLineSound, 0.8);
+    var audioManager: AudioManager = try AudioManager.init(screenHeight, playerStartY);
+    defer audioManager.unloadAll();
 
     rl.initWindow(screenWidth, screenHeight, gameTitle);
     defer rl.closeWindow();
@@ -218,19 +181,7 @@ pub fn main(init: std.process.Init) !void {
                 if (debug) print("MENU\n", .{});
 
                 // Play Music
-                if (rl.isMusicStreamPlaying(gameMusic)) rl.stopMusicStream(gameMusic);
-                if (rl.isMusicStreamPlaying(player1EngineSound)) rl.stopMusicStream(player1EngineSound);
-                if (rl.isMusicStreamPlaying(player2EngineSound)) rl.stopMusicStream(player2EngineSound);
-
-                if (!rl.isMusicStreamPlaying(menuMusic)) {
-                    rl.playMusicStream(menuMusic);
-                }
-
-                rl.updateMusicStream(menuMusic);
-
-                if (debug) {
-                    if (rl.isMusicStreamPlaying(menuMusic)) print("MENU MUSIC PLAYING\n", .{});
-                }
+                audioManager.menuUpdate(debug);
 
                 // Core
                 // UPDATE
@@ -311,43 +262,7 @@ pub fn main(init: std.process.Init) !void {
             GameState.RUNNING => {
                 if (debug) print("RUNNING\n", .{});
 
-                // Stop Menu Music
-                if (rl.isMusicStreamPlaying(menuMusic)) rl.stopMusicStream(menuMusic);
-
-                // Start Game Music
-                if (!rl.isMusicStreamPlaying(gameMusic)) {
-                    rl.playMusicStream(gameMusic);
-                }
-
-                // Manage engine sounds
-                if (!rl.isMusicStreamPlaying(player1EngineSound)) {
-                    rl.playMusicStream(player1EngineSound);
-                }
-
-                if (!rl.isMusicStreamPlaying(player2EngineSound)) {
-                    rl.playMusicStream(player2EngineSound);
-                }
-
-                player1EngineVolume = (@as(f32, @floatFromInt(screenHeight)) - player1.position_y) / (@as(f32, @floatFromInt(screenHeight)) * 0.5);
-                player2EngineVolume = (@as(f32, @floatFromInt(screenHeight)) - player2.position_y) / (@as(f32, @floatFromInt(screenHeight)) * 0.5);
-
-                player1EnginePitch = (@as(f32, @floatFromInt(screenHeight)) - player1.position_y) / (@as(f32, @floatFromInt(screenHeight))) + 1.0;
-                player2EnginePitch = (@as(f32, @floatFromInt(screenHeight)) - player2.position_y) / (@as(f32, @floatFromInt(screenHeight))) + 1.0;
-
-                if (player1EngineVolume > 0.7) {
-                    player1EngineVolume = 0.7;
-                }
-
-                if (player2EngineVolume > 0.7) {
-                    player2EngineVolume = 0.7;
-                }
-
-                rl.setMusicVolume(player1EngineSound, player1EngineVolume);
-                rl.setMusicVolume(player2EngineSound, player2EngineVolume);
-
-                rl.updateMusicStream(gameMusic);
-                rl.updateMusicStream(player1EngineSound);
-                rl.updateMusicStream(player2EngineSound);
+                audioManager.runningUpdate(screenHeight, player1, player2);
 
                 // ====== CONFIG ======
 
@@ -362,23 +277,23 @@ pub fn main(init: std.process.Init) !void {
                 player2.update(dt);
 
                 if (player1.position_y < 0.0 - player1.width) {
-                    rl.playSound(crossLineSound);
+                    audioManager.playCrossLineSound();
                     player1.state = PlayerState.CROSS_FINISH_LINE;
                 }
 
                 if (player2.position_y < 0.0 - player2.width) {
-                    rl.playSound(crossLineSound);
+                    audioManager.playCrossLineSound();
                     player2.state = PlayerState.CROSS_FINISH_LINE;
                 }
 
                 for (&stars) |*star| {
                     star.update(dt, screenWidth);
                     if (star.getRect().isColliding(player1.getRect())) {
-                        rl.playSound(starShootSound);
+                        audioManager.playStarShootSound();
                         player1.state = PlayerState.DEAD;
                     }
                     if (star.getRect().isColliding(player2.getRect())) {
-                        rl.playSound(starShootSound);
+                        audioManager.playStarShootSound();
                         player2.state = PlayerState.DEAD;
                     }
                 }
