@@ -1,51 +1,52 @@
 const rl = @import("raylib");
 
 pub const Reactor = struct {
-    textureAtlas: rl.Texture,
-    frameSize: f32,
-    frameRec: rl.Rectangle,
-    currentFrame: i32,
-    frameCounter: f32,
-    frameSpeed: f32,
+    texture_atlas: rl.Texture,
+    frame_size: f32,
+    frame_rec: rl.Rectangle,
+    current_frame: i32,
+    frame_counter: f32,
+    frame_speed: f32,
 
     pub fn init(
-        textureAtlas: rl.Texture,
-        frameSize: f32,
-        frameSpeed: f32,
+        texture_atlas: rl.Texture,
+        frame_size: f32,
+        frame_speed: f32,
     ) @This() {
         return .{
-            .textureAtlas = textureAtlas,
-            .frameSize = frameSize,
-            .frameSpeed = frameSpeed,
-            .frameRec = rl.Rectangle.init(
+            .texture_atlas = texture_atlas,
+            .frame_size = frame_size,
+            .frame_speed = frame_speed,
+            .frame_rec = rl.Rectangle.init(
                 0.0,
                 0.0,
-                frameSize,
-                frameSize,
+                frame_size,
+                frame_size,
             ),
-            .currentFrame = 0,
-            .frameCounter = 0,
+            .current_frame = 0,
+            .frame_counter = 0,
         };
     }
 
-    pub fn getMaxFrame(self: @This()) f32 {
-        return @as(f32, @floatFromInt(self.textureAtlas.width)) / self.frameSize;
+    pub fn get_max_frame(self: @This()) f32 {
+        return @as(f32, @floatFromInt(self.texture_atlas.width)) / self.frame_size;
     }
 
-    pub fn update(self: *@This(), dt: f32, minFrame: f32, maxFrame: f32) void {
-        if (self.frameCounter < minFrame) {
-            self.frameCounter = minFrame;
+    pub fn update(self: *@This(), dt: f32, min_frame: f32, max_frame: f32) void {
+        if (self.frame_counter < min_frame) {
+            self.frame_counter = min_frame;
         }
 
-        self.frameCounter += self.frameSpeed * dt;
+        self.frame_counter += self.frame_speed * dt;
 
-        if (self.frameCounter >= maxFrame) {
-            self.frameCounter = minFrame;
+        if (self.frame_counter >= max_frame) {
+            self.frame_counter = min_frame;
         }
-        self.currentFrame = @as(i32, @floor(self.frameCounter));
-        self.frameRec.x = @as(f32, @floatFromInt(self.currentFrame)) * self.frameSize;
+        self.current_frame = @as(i32, @floor(self.frame_counter));
+        self.frame_rec.x = @as(f32, @floatFromInt(self.current_frame)) * self.frame_size;
     }
+
     pub fn draw(self: @This(), position: rl.Vector2) void {
-        rl.drawTextureRec(self.textureAtlas, self.frameRec, position, rl.Color.white);
+        rl.drawTextureRec(self.texture_atlas, self.frame_rec, position, rl.Color.white);
     }
 };

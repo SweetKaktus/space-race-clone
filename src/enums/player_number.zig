@@ -1,4 +1,4 @@
 pub const PlayerNumber = enum {
-	firstPlayer,
-	secondPlayer	
+	first_player,
+	second_player
 };

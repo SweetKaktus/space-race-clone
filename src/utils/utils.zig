@@ -3,72 +3,72 @@ const rl = @import("raylib");
 
 const Player = @import("../entities/player.zig").Player;
 const Star = @import("../entities/star.zig").Star;
-const BackgroundStar = @import("../entities/backgroundStar.zig").BackgroundStar;
+const BackgroundStar = @import("../entities/background_star.zig").BackgroundStar;
 
-const PlayerNumber = @import("../enums/playerNumber.zig").PlayerNumber;
-const StarDirection = @import("../enums/starDirection.zig").StarDirection;
+const PlayerNumber = @import("../enums/player_number.zig").PlayerNumber;
+const StarDirection = @import("../enums/star_direction.zig").StarDirection;
 
-const GameConfig = @import("../config/gameConfig.zig").GameConfig;
+const GameConfig = @import("../config/game_config.zig").GameConfig;
 
-pub fn resetGame(
+pub fn reset_game(
     player1: *Player,
     player2: *Player,
     stars: []Star,
-    bgStars: []BackgroundStar,
-    floatTimer: *f32,
-    intTimer: *i32,
+    bg_stars: []BackgroundStar,
+    float_timer: *f32,
+    int_timer: *i32,
     io: std.Io,
     config: GameConfig,
 ) void {
     // Reset Random Seed
-    rngInitNewSeed(io);
+    rng_init_new_seed(io);
 
     // Reset Players
     player1.* = Player.init(
-        PlayerNumber.firstPlayer,
-        config.player1StartX,
-        config.playerStartY,
-        config.playerBottomBoundPosition,
-        config.spriteSize,
-        config.spriteSize,
-        config.player1Texture,
-        config.reactorTextureAtlas,
+        PlayerNumber.first_player,
+        config.player1_start_x,
+        config.player_start_y,
+        config.player_bottom_bound_position,
+        config.sprite_size,
+        config.sprite_size,
+        config.player1_texture,
+        config.reactor_texture_atlas,
     );
     player2.* = Player.init(
-        PlayerNumber.secondPlayer,
-        config.player2StartX,
-        config.playerStartY,
-        config.playerBottomBoundPosition,
-        config.spriteSize,
-        config.spriteSize,
-        config.player2Texture,
-        config.reactorTextureAtlas,
+        PlayerNumber.second_player,
+        config.player2_start_x,
+        config.player_start_y,
+        config.player_bottom_bound_position,
+        config.sprite_size,
+        config.sprite_size,
+        config.player2_texture,
+        config.reactor_texture_atlas,
     );
 
     // Reset Stars
     for (stars, 0..) |*star, i| {
-        const starStartX = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screenWidth)));
-        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, config.boundBottomStarStartY)));
-        var starDirection = StarDirection.right;
+        const star_start_x = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screen_width)));
+        const star_start_y = @as(f32, @floatFromInt(rl.getRandomValue(0, config.bound_bottom_star_start_y)));
+        var star_direction = StarDirection.right;
         if (i % 2 == 0) {
-            starDirection = StarDirection.left;
+            star_direction = StarDirection.left;
         }
 
-        star.* = Star.init(starStartX, starStartY, config.starWidth, config.starHeight, starDirection);
+        star.* = Star.init(star_start_x, star_start_y, config.star_width, config.star_height, star_direction);
     }
 
-    for (bgStars) |*star| {
-        const starStartX = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screenWidth)));
-        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screenHeight)));
-        star.* = BackgroundStar.init(starStartX, starStartY);
+    for (bg_stars) |*star| {
+        const star_start_x = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screen_width)));
+        const star_start_y = @as(f32, @floatFromInt(rl.getRandomValue(0, config.screen_height)));
+        star.* = BackgroundStar.init(star_start_x, star_start_y);
     }
 
     // Reset Timer
-    floatTimer.* = config.initTimer;
-    intTimer.* = @intFromFloat(floatTimer.*);
+    float_timer.* = config.init_timer;
+    int_timer.* = @intFromFloat(float_timer.*);
 }
 
-pub fn rngInitNewSeed(io: std.Io) void {
+pub fn rng_init_new_seed(io: std.Io) void {
     const timestamp: i64 = std.Io.Clock.now(.real, io).toSeconds();
     rl.setRandomSeed(@as(u32, @intCast(timestamp)));
 }

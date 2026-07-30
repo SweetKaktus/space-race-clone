@@ -18,8 +18,8 @@ pub const Rectangle = struct {
 		};
 	}
 
-	pub fn isColliding(self: @This(), other: Rectangle) bool {
-		return self.x < other.x + other.width and 
+	pub fn is_colliding(self: @This(), other: Rectangle) bool {
+		return self.x < other.x + other.width and
 			self.x + self.width > other.x and
 			self.y < other.y + other.height and
 			self.y + self.height > other.y;

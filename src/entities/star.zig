@@ -1,6 +1,6 @@
 const rl = @import("raylib");
-const StarDirection = @import("../enums/starDirection.zig").StarDirection;
-const Rectangle = @import("../composants/rectangle.zig").Rectangle;
+const StarDirection = @import("../enums/star_direction.zig").StarDirection;
+const Rectangle = @import("../components/rectangle.zig").Rectangle;
 
 pub const Star = struct {
     position_x: f32,
@@ -28,7 +28,8 @@ pub const Star = struct {
             .color = rl.Color.gold,
         };
     }
-    pub fn getRect(self: @This()) Rectangle {
+
+    pub fn get_rect(self: @This()) Rectangle {
         return .{
             .x = self.position_x,
             .y = self.position_y,
@@ -36,22 +37,24 @@ pub const Star = struct {
             .height = self.height,
         };
     }
-    pub fn update(self: *@This(), dt: f32, screenWidth: i32) void {
-        const intDirection = @intFromEnum(self.direction);
-        const floatDirection = @as(f32, @floatFromInt(intDirection));
 
-        self.position_x += self.speed * dt * floatDirection;
+    pub fn update(self: *@This(), dt: f32, screen_width: i32) void {
+        const int_direction = @intFromEnum(self.direction);
+        const float_direction = @as(f32, @floatFromInt(int_direction));
+
+        self.position_x += self.speed * dt * float_direction;
 
         if (self.direction == StarDirection.right) {
-            if (self.position_x >= @as(f32, @floatFromInt(screenWidth))) {
+            if (self.position_x >= @as(f32, @floatFromInt(screen_width))) {
                 self.position_x = 0;
             }
         } else {
             if (self.position_x < 0 - self.width) {
-                self.position_x = @as(f32, @floatFromInt(screenWidth));
+                self.position_x = @as(f32, @floatFromInt(screen_width));
             }
         }
     }
+
     pub fn draw(self: @This()) void {
         rl.drawRectangle(
             @intFromFloat(self.position_x),

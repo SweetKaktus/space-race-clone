@@ -9,19 +9,19 @@ const rl = @import("raylib");
 // import entities
 const Player = @import("entities/player.zig").Player;
 const Star = @import("entities/star.zig").Star;
-const BackgroundStar = @import("entities/backgroundStar.zig").BackgroundStar;
+const BackgroundStar = @import("entities/background_star.zig").BackgroundStar;
 
 // import enums
-const PlayerNumber = @import("enums/playerNumber.zig").PlayerNumber;
-const PlayerState = @import("enums/playerState.zig").PlayerState;
-const StarDirection = @import("enums/starDirection.zig").StarDirection;
-const GameState = @import("enums/gameState.zig").GameState;
+const PlayerNumber = @import("enums/player_number.zig").PlayerNumber;
+const PlayerState = @import("enums/player_state.zig").PlayerState;
+const StarDirection = @import("enums/star_direction.zig").StarDirection;
+const GameState = @import("enums/game_state.zig").GameState;
 
 // import configs
-const GameConfig = @import("config/gameConfig.zig").GameConfig;
+const GameConfig = @import("config/game_config.zig").GameConfig;
 
 // import systems
-const AudioManager = @import("systems/audioManager.zig").AudioManager;
+const AudioManager = @import("systems/audio_manager.zig").AudioManager;
 
 // import utils
 const utils = @import("utils/utils.zig");
@@ -32,244 +32,244 @@ pub fn main(init: std.process.Init) !void {
 
     // Set Timestamp to get random seed for PRNG
     const io = init.io;
-    utils.rngInitNewSeed(io);
+    utils.rng_init_new_seed(io);
 
-    const screenWidth = 800;
-    const screenHeight = 600;
-    const gameTitle = "Space Race";
+    const screen_width = 800;
+    const screen_height = 600;
+    const game_title = "Space Race";
 
-    var gameState: GameState = GameState.MENU;
-    var firstGame = true;
+    var game_state: GameState = GameState.menu;
+    var first_game: bool = true;
 
-    const spriteSize = 32.0;
+    const sprite_size = 32.0;
 
     // load ship sprites into images
-    const minShip: usize = 0;
-    const maxShip: usize = 4;
-    var shipSpritesImg: [maxShip + 1]rl.Image = undefined;
-    for (&shipSpritesImg, 0..) |*sprite, i| {
+    const min_ship: usize = 0;
+    const max_ship: usize = 4;
+    var ship_sprites_img: [max_ship + 1]rl.Image = undefined;
+    for (&ship_sprites_img, 0..) |*sprite, i| {
         sprite.* = try rl.loadImage(rl.textFormat("assets/graphics/ships/space_ship_%d.png", .{i + 1}));
-        sprite.resizeNN(@as(i32, @intFromFloat(spriteSize)), @as(i32, @intFromFloat(spriteSize)));
+        sprite.resizeNN(@as(i32, @intFromFloat(sprite_size)), @as(i32, @intFromFloat(sprite_size)));
     }
 
     // load reactor spritesheet into image
-    var reactorImageAtlas = try rl.loadImage("assets/graphics/reactor_fire_spritesheet.png");
-    reactorImageAtlas.resizeNN(spriteSize * 12, spriteSize);
+    var reactor_image_atlas = try rl.loadImage("assets/graphics/reactor_fire_spritesheet.png");
+    reactor_image_atlas.resizeNN(sprite_size * 12, sprite_size);
 
     // Config Player
-    const playerStartY = @as(f32, @floatFromInt(screenHeight)) - 90.0;
-    const playerBottomBoundPosition = @as(f32, @floatFromInt(screenHeight)) - spriteSize / 2;
-    const player1StartX = @as(f32, @floatFromInt(screenWidth)) / 4 - spriteSize / 2;
-    const player2StartX = @as(f32, @floatFromInt(screenWidth)) / 4 * 3 - spriteSize / 2;
+    const player_start_y = @as(f32, @floatFromInt(screen_height)) - 90.0;
+    const player_bottom_bound_position = @as(f32, @floatFromInt(screen_height)) - sprite_size / 2;
+    const player1_start_x = @as(f32, @floatFromInt(screen_width)) / 4 - sprite_size / 2;
+    const player2_start_x = @as(f32, @floatFromInt(screen_width)) / 4 * 3 - sprite_size / 2;
 
     // Config Stars
-    const starCount = 24;
-    const boundBottomStarStartY = @as(i32, @intFromFloat(playerStartY - 20.0));
-    const starWidth = 8.0;
-    const starHeight = 8.0;
+    const star_count = 24;
+    const bound_bottom_star_start_y = @as(i32, @intFromFloat(player_start_y - 20.0));
+    const star_width = 8.0;
+    const star_height = 8.0;
 
     // Config Background Stars
-    const bgStarCount = 8;
-    var bgStars: [bgStarCount]BackgroundStar = undefined;
-    for (&bgStars, 0..) |*star, i| {
-        var starStartX: f32 = @as(f32, @floatFromInt(rl.getRandomValue(10, screenWidth / 2)));
-        if (i >= bgStars.len / 2) {
-            starStartX = @as(f32, @floatFromInt(rl.getRandomValue(screenWidth / 2, screenWidth - 10)));
+    const bg_star_count = 8;
+    var bg_stars: [bg_star_count]BackgroundStar = undefined;
+    for (&bg_stars, 0..) |*star, i| {
+        var star_start_x: f32 = @as(f32, @floatFromInt(rl.getRandomValue(10, screen_width / 2)));
+        if (i >= bg_stars.len / 2) {
+            star_start_x = @as(f32, @floatFromInt(rl.getRandomValue(screen_width / 2, screen_width - 10)));
         }
 
-        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, screenHeight)));
-        star.* = BackgroundStar.init(starStartX, starStartY);
+        const star_start_y = @as(f32, @floatFromInt(rl.getRandomValue(0, screen_height)));
+        star.* = BackgroundStar.init(star_start_x, star_start_y);
     }
 
-    var stars: [starCount]Star = undefined;
+    var stars: [star_count]Star = undefined;
     for (&stars, 0..) |*star, i| {
-        const starStartX = @as(f32, @floatFromInt(rl.getRandomValue(0, screenWidth)));
-        const starStartY = @as(f32, @floatFromInt(rl.getRandomValue(0, boundBottomStarStartY)));
-        var starDirection = StarDirection.right;
+        const star_start_x = @as(f32, @floatFromInt(rl.getRandomValue(0, screen_width)));
+        const star_start_y = @as(f32, @floatFromInt(rl.getRandomValue(0, bound_bottom_star_start_y)));
+        var star_direction = StarDirection.right;
         if (i % 2 == 0) {
-            starDirection = StarDirection.left;
+            star_direction = StarDirection.left;
         }
 
-        star.* = Star.init(starStartX, starStartY, starWidth, starHeight, starDirection);
+        star.* = Star.init(star_start_x, star_start_y, star_width, star_height, star_direction);
     }
 
     // Timer
-    const initTimer: f32 = 61.0;
-    var floatTimer: f32 = initTimer;
-    var intTimer: i32 = @as(i32, @intFromFloat(floatTimer));
+    const init_timer: f32 = 61.0;
+    var float_timer: f32 = init_timer;
+    var int_timer: i32 = @as(i32, @intFromFloat(float_timer));
 
     // Config Audio
     rl.initAudioDevice();
     defer rl.closeAudioDevice();
 
-    var audioManager: AudioManager = try AudioManager.init(screenHeight, playerStartY);
-    defer audioManager.unloadAll();
+    var audio_manager: AudioManager = try AudioManager.init(screen_height, player_start_y);
+    defer audio_manager.unload_all();
 
-    rl.initWindow(screenWidth, screenHeight, gameTitle);
+    rl.initWindow(screen_width, screen_height, game_title);
     defer rl.closeWindow();
 
-    var shipSpritesTextures: [maxShip + 1]rl.Texture = undefined;
-    for (&shipSpritesTextures, 0..) |*sprite, i| {
-        sprite.* = try rl.loadTextureFromImage(shipSpritesImg[i]);
+    var ship_sprites_textures: [max_ship + 1]rl.Texture = undefined;
+    for (&ship_sprites_textures, 0..) |*sprite, i| {
+        sprite.* = try rl.loadTextureFromImage(ship_sprites_img[i]);
     }
     defer {
-        for (&shipSpritesTextures) |*sprite| {
+        for (&ship_sprites_textures) |*sprite| {
             if (debug) print("SPRITE TEXTURE UNLOADED\n", .{});
             sprite.unload();
         }
     }
 
-    for (&shipSpritesImg) |*sprite| {
+    for (&ship_sprites_img) |*sprite| {
         if (debug) print("SPRITE IMAGE UNLOADED\n", .{});
         sprite.unload();
     }
 
-    const reactorTextureAtlas = try rl.loadTextureFromImage(reactorImageAtlas);
-    defer reactorTextureAtlas.unload();
-    reactorImageAtlas.unload();
+    const reactor_texture_atlas = try rl.loadTextureFromImage(reactor_image_atlas);
+    defer reactor_texture_atlas.unload();
+    reactor_image_atlas.unload();
 
-    var player1SelectedShip: usize = 0;
-    var player2SelectedShip: usize = 1;
+    var player1_selected_ship: usize = 0;
+    var player2_selected_ship: usize = 1;
 
-    const player1Texture = shipSpritesTextures[player1SelectedShip];
-    const player2Texture = shipSpritesTextures[player2SelectedShip];
+    const player1_texture = ship_sprites_textures[player1_selected_ship];
+    const player2_texture = ship_sprites_textures[player2_selected_ship];
 
     var player1 = Player.init(
-        PlayerNumber.firstPlayer,
-        player1StartX,
-        playerStartY,
-        playerBottomBoundPosition,
-        spriteSize,
-        spriteSize,
-        player1Texture,
-        reactorTextureAtlas,
+        PlayerNumber.first_player,
+        player1_start_x,
+        player_start_y,
+        player_bottom_bound_position,
+        sprite_size,
+        sprite_size,
+        player1_texture,
+        reactor_texture_atlas,
     );
     var player2 = Player.init(
-        PlayerNumber.secondPlayer,
-        player2StartX,
-        playerStartY,
-        playerBottomBoundPosition,
-        spriteSize,
-        spriteSize,
-        player2Texture,
-        reactorTextureAtlas,
+        PlayerNumber.second_player,
+        player2_start_x,
+        player_start_y,
+        player_bottom_bound_position,
+        sprite_size,
+        sprite_size,
+        player2_texture,
+        reactor_texture_atlas,
     );
 
     var config: GameConfig = GameConfig.init(
-        screenWidth,
-        screenHeight,
-        spriteSize,
-        playerStartY,
-        playerBottomBoundPosition,
-        player1StartX,
-        player2StartX,
-        player1Texture,
-        player2Texture,
-        reactorTextureAtlas,
-        boundBottomStarStartY,
-        starWidth,
-        starHeight,
-        initTimer,
+        screen_width,
+        screen_height,
+        sprite_size,
+        player_start_y,
+        player_bottom_bound_position,
+        player1_start_x,
+        player2_start_x,
+        player1_texture,
+        player2_texture,
+        reactor_texture_atlas,
+        bound_bottom_star_start_y,
+        star_width,
+        star_height,
+        init_timer,
     );
 
     while (!rl.windowShouldClose()) {
-        // ========= GAME LOOP =========
+        // ========= GAME LOOP ==========
 
         rl.beginDrawing();
         defer rl.endDrawing();
 
         rl.clearBackground(rl.Color.black);
 
-        switch (gameState) {
-            GameState.MENU => {
+        switch (game_state) {
+            GameState.menu => {
                 if (debug) print("MENU\n", .{});
 
                 // Play Music
-                audioManager.menuUpdate(debug);
+                audio_manager.menu_update(debug);
 
                 // Core
                 // UPDATE
 
                 if (rl.isKeyPressed(rl.KeyboardKey.a)) {
-                    if (player1SelectedShip <= minShip) {
-                        player1SelectedShip = maxShip;
+                    if (player1_selected_ship <= min_ship) {
+                        player1_selected_ship = max_ship;
                     } else {
-                        player1SelectedShip -= 1;
+                        player1_selected_ship -= 1;
                     }
                 }
 
                 if (rl.isKeyPressed(rl.KeyboardKey.d)) {
-                    player1SelectedShip += 1;
-                    if (player1SelectedShip > maxShip) {
-                        player1SelectedShip = minShip;
+                    player1_selected_ship += 1;
+                    if (player1_selected_ship > max_ship) {
+                        player1_selected_ship = min_ship;
                     }
                 }
 
                 if (rl.isKeyPressed(rl.KeyboardKey.left)) {
-                    if (player2SelectedShip <= minShip) {
-                        player2SelectedShip = maxShip;
+                    if (player2_selected_ship <= min_ship) {
+                        player2_selected_ship = max_ship;
                     } else {
-                        player2SelectedShip -= 1;
+                        player2_selected_ship -= 1;
                     }
                 }
 
                 if (rl.isKeyPressed(rl.KeyboardKey.right)) {
-                    player2SelectedShip += 1;
-                    if (player2SelectedShip > maxShip) {
-                        player2SelectedShip = minShip;
+                    player2_selected_ship += 1;
+                    if (player2_selected_ship > max_ship) {
+                        player2_selected_ship = min_ship;
                     }
                 }
 
-                config.setPlayerTexture(
-                    shipSpritesTextures[player1SelectedShip],
-                    shipSpritesTextures[player2SelectedShip],
+                config.set_player_texture(
+                    ship_sprites_textures[player1_selected_ship],
+                    ship_sprites_textures[player2_selected_ship],
                 );
 
                 // DRAW
-                rl.drawText("Press SPACE to Start, Press ESC to Quit", 75, @as(f32, @floatFromInt(screenHeight)) / 2 - 40, 30, rl.Color.green);
-                if (!firstGame) {
-                    const player1ScoreText = rl.textFormat("Score player 1 = %d", .{player1.score});
-                    const player2ScoreText = rl.textFormat("Score player 2 = %d", .{player2.score});
-                    rl.drawText(player1ScoreText, 50, screenHeight - 200, 20, rl.Color.yellow);
-                    rl.drawText(player2ScoreText, screenWidth - 250, screenHeight - 200, 20, rl.Color.yellow);
+                rl.drawText("Press SPACE to Start, Press ESC to Quit", 75, @as(f32, @floatFromInt(screen_height)) / 2 - 40, 30, rl.Color.green);
+                if (!first_game) {
+                    const player1_score_text = rl.textFormat("Score player 1 = %d", .{player1.score});
+                    const player2_score_text = rl.textFormat("Score player 2 = %d", .{player2.score});
+                    rl.drawText(player1_score_text, 50, screen_height - 200, 20, rl.Color.yellow);
+                    rl.drawText(player2_score_text, screen_width - 250, screen_height - 200, 20, rl.Color.yellow);
                 }
 
                 rl.drawTexture(
-                    config.player1Texture,
-                    @as(i32, @intFromFloat(config.player1StartX)),
-                    @as(i32, @intFromFloat(config.playerStartY)),
+                    config.player1_texture,
+                    @as(i32, @intFromFloat(config.player1_start_x)),
+                    @as(i32, @intFromFloat(config.player_start_y)),
                     rl.Color.white,
                 );
                 rl.drawTexture(
-                    config.player2Texture,
-                    @as(i32, @intFromFloat(config.player2StartX)),
-                    @as(i32, @intFromFloat(config.playerStartY)),
+                    config.player2_texture,
+                    @as(i32, @intFromFloat(config.player2_start_x)),
+                    @as(i32, @intFromFloat(config.player_start_y)),
                     rl.Color.white,
                 );
 
                 if (rl.isKeyDown(rl.KeyboardKey.space)) {
-                    utils.resetGame(
+                    utils.reset_game(
                         &player1,
                         &player2,
                         &stars,
-                        &bgStars,
-                        &floatTimer,
-                        &intTimer,
+                        &bg_stars,
+                        &float_timer,
+                        &int_timer,
                         io,
                         config,
                     );
 
-                    gameState = GameState.RUNNING;
+                    game_state = GameState.running;
                 }
             },
-            GameState.RUNNING => {
+            GameState.running => {
                 if (debug) print("RUNNING\n", .{});
 
-                audioManager.runningUpdate(screenHeight, player1, player2);
+                audio_manager.running_update(screen_height, player1, player2);
 
                 // ====== CONFIG ======
 
-                firstGame = false;
+                first_game = false;
                 const dt = rl.getFrameTime();
 
                 // ====== END ======
@@ -279,37 +279,37 @@ pub fn main(init: std.process.Init) !void {
                 player1.update(dt);
                 player2.update(dt);
 
-                if (player1.position_y < 0.0 - player1.width) {
-                    audioManager.playCrossLineSound();
-                    player1.state = PlayerState.CROSS_FINISH_LINE;
+                if (player1.position_y < 0.0 - player1.height) {
+                    audio_manager.play_cross_line_sound();
+                    player1.state = PlayerState.cross_finish_line;
                 }
 
-                if (player2.position_y < 0.0 - player2.width) {
-                    audioManager.playCrossLineSound();
-                    player2.state = PlayerState.CROSS_FINISH_LINE;
+                if (player2.position_y < 0.0 - player2.height) {
+                    audio_manager.play_cross_line_sound();
+                    player2.state = PlayerState.cross_finish_line;
                 }
 
                 for (&stars) |*star| {
-                    star.update(dt, screenWidth);
-                    if (star.getRect().isColliding(player1.getRect())) {
-                        audioManager.playStarShootSound();
-                        player1.state = PlayerState.DEAD;
+                    star.update(dt, screen_width);
+                    if (star.get_rect().is_colliding(player1.get_rect())) {
+                        audio_manager.play_star_shoot_sound();
+                        player1.state = PlayerState.dead;
                     }
-                    if (star.getRect().isColliding(player2.getRect())) {
-                        audioManager.playStarShootSound();
-                        player2.state = PlayerState.DEAD;
+                    if (star.get_rect().is_colliding(player2.get_rect())) {
+                        audio_manager.play_star_shoot_sound();
+                        player2.state = PlayerState.dead;
                     }
                 }
 
-                for (&bgStars) |*star| {
-                    star.update(dt, screenHeight);
+                for (&bg_stars) |*star| {
+                    star.update(dt, screen_height);
                 }
 
-                floatTimer -= 1.0 * dt;
-                intTimer = @as(i32, @intFromFloat(floatTimer));
+                float_timer -= 1.0 * dt;
+                int_timer = @as(i32, @intFromFloat(float_timer));
 
-                if (intTimer <= 0) {
-                    gameState = GameState.TIMES_UP;
+                if (int_timer <= 0) {
+                    game_state = GameState.times_up;
                 }
 
                 // ====== END ======
@@ -323,33 +323,33 @@ pub fn main(init: std.process.Init) !void {
                     star.draw();
                 }
 
-                for (&bgStars) |*star| {
+                for (&bg_stars) |*star| {
                     star.draw();
                 }
 
                 // Draw Score
-                const scorePlayer1_text = rl.textFormat("%d", .{player1.score});
-                const scorePlayer2_text = rl.textFormat("%d", .{player2.score});
-                rl.drawText(scorePlayer1_text, 20, screenHeight - 60, 40, rl.Color.yellow);
-                rl.drawText(scorePlayer2_text, screenWidth - 40, screenHeight - 60, 40, rl.Color.yellow);
+                const score_player1_text = rl.textFormat("%d", .{player1.score});
+                const score_player2_text = rl.textFormat("%d", .{player2.score});
+                rl.drawText(score_player1_text, 20, screen_height - 60, 40, rl.Color.yellow);
+                rl.drawText(score_player2_text, screen_width - 40, screen_height - 60, 40, rl.Color.yellow);
 
                 // Draw Timer
 
-                const timer_text = rl.textFormat("%d\n", .{intTimer});
-                rl.drawText(timer_text, @as(f32, @floatFromInt(screenWidth)) / 2 - 30, screenHeight - 80, 60, rl.Color.white);
+                const timer_text = rl.textFormat("%d\n", .{int_timer});
+                rl.drawText(timer_text, @as(f32, @floatFromInt(screen_width)) / 2 - 30, screen_height - 80, 60, rl.Color.white);
 
                 // ====== END ======
             },
-            GameState.TIMES_UP => {
+            GameState.times_up => {
                 if (debug) print("TIMES_UP\n", .{});
                 // Play Animation ?
                 // Play Sound ?
                 // Create Particles ?
 
-                gameState = GameState.MENU;
+                game_state = GameState.menu;
             },
         }
 
-        // ========= END =========
+        // ========= END ==========
     }
 }

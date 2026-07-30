@@ -27,9 +27,9 @@ pub const BackgroundStar = struct {
         };
     }
 
-    pub fn update(self: *@This(), dt: f32, screenHeight: i32) void {
+    pub fn update(self: *@This(), dt: f32, screen_height: i32) void {
         self.position_y += self.speed * dt;
-        if (self.position_y >= @as(f32, @floatFromInt(screenHeight))) {
+        if (self.position_y >= @as(f32, @floatFromInt(screen_height))) {
             self.position_y = 0;
         }
     }
